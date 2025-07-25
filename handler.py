@@ -40,25 +40,27 @@ def load_models():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Using device: {device}")
         
-        # Load transformer
+        # Load transformer - use cached models if available
         my_transformer = AdditFluxTransformer2DModel.from_pretrained(
-            "black-forest-labs/FLUX.1-dev", 
-            subfolder="transformer", 
-            torch_dtype=torch.bfloat16
+            "black-forest-labs/FLUX.1-dev",
+            subfolder="transformer",
+            torch_dtype=torch.bfloat16,
+            cache_dir=os.getenv('HF_HOME', '/app/.cache/huggingface')
         )
         
-        # Load pipeline
+        # Load pipeline - use cached models if available
         pipe = AdditFluxPipeline.from_pretrained(
-            "black-forest-labs/FLUX.1-dev", 
+            "black-forest-labs/FLUX.1-dev",
             transformer=my_transformer,
-            torch_dtype=torch.bfloat16
+            torch_dtype=torch.bfloat16,
+            cache_dir=os.getenv('HF_HOME', '/app/.cache/huggingface')
         ).to(device)
         
         # Configure scheduler
         pipe.scheduler = AdditFlowMatchEulerDiscreteScheduler.from_config(pipe.scheduler.config)
         
         model_loaded = True
-        logger.info("Models loaded successfully")
+        logger.info("Models loaded successfully from cache")
         
     except Exception as e:
         logger.error(f"Error loading models: {str(e)}")
