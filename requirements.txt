@@ -8,3 +8,4 @@ diffusers>=0.20.0
 accelerate>=0.20.0
 safetensors>=0.3.0
 xformers>=0.0.20  # Optional: for memory efficiency
+requests>=2.28.0  # For OpenRouter API calls

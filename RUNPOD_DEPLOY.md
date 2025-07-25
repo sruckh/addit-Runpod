@@ -46,6 +46,27 @@ docker run -p 8000:8000 addit-serverless
 ## 📡 API Usage
 
 ### Request Format
+
+#### Option 1: Auto-Prompt Generation (Recommended)
+```json
+POST /run
+{
+  "input": {
+    "source_image": "<base64-encoded-image>",
+    "object_to_add": "cat",
+    "seed_src": 6311,
+    "seed_obj": 1,
+    "extended_scale": 1.1,
+    "structure_transfer_step": 4,
+    "blend_steps": [18],
+    "localization_model": "attention",
+    "use_offset": false,
+    "use_inversion": true
+  }
+}
+```
+
+#### Option 2: Manual Prompts
 ```json
 POST /run
 {
@@ -94,6 +115,8 @@ POST /run
 ### Environment Variables
 - `HF_HOME`: Hugging Face cache directory (default: `/app/.cache/huggingface`)
 - `PYTHONUNBUFFERED`: Enable unbuffered logging (default: `1`)
+- `HF_TOKEN`: Hugging Face authentication token (required for FLUX.1-dev model access)
+- `OPENROUTER_API_KEY`: OpenRouter API key for auto-prompt generation (optional, fallback to simple prompts if not provided)
 
 ### RunPod Configuration (`runpod.toml`)
 - **GPU**: 1x GPU (required for FLUX.1-dev)
@@ -125,6 +148,35 @@ POST /run
    - Ensure base64 encoding is correct
    - Check image format (PNG/JPEG supported)
 
+### Auto-Prompt Generation
+
+The API now supports automatic prompt generation using Qwen2.5-VL-72B (free):
+
+**Benefits:**
+- **Simplified API**: Just provide `object_to_add` instead of crafting prompts
+- **Intelligent Analysis**: AI analyzes your source image to create contextual prompts
+- **Better Results**: Prompts are tailored to the specific scene and lighting
+
+**How it works:**
+1. Qwen2.5-VL-72B (free) analyzes your source image
+2. Generates a detailed description of the scene
+3. Creates contextually appropriate prompts for object insertion
+
+**Example:**
+```json
+{
+  "input": {
+    "source_image": "<base64-image-of-bedroom>",
+    "object_to_add": "cat"
+  }
+}
+```
+
+**Generated prompts might be:**
+- `prompt_source`: "A cozy bedroom with warm lighting, featuring a bed with rumpled sheets and soft pillows"
+- `subject_token`: "cat"
+- `prompt_target`: "A cozy bedroom with warm lighting, featuring a cat lying on a bed with rumpled sheets and soft pillows"
+
 ### Debug Mode
 ```bash
 # Enable debug logging
@@ -138,7 +190,9 @@ python handler.py
 - [ ] Docker image builds successfully (`docker build -t addit-serverless .`)
 - [ ] Local testing passes (`python test_local.py`)
 - [ ] RunPod configuration validated (`runpod.toml`)
-- [ ] Environment variables configured
+- [ ] Environment variables configured:
+  - [ ] `HF_TOKEN` set in RunPod dashboard (required)
+  - [ ] `OPENROUTER_API_KEY` set in RunPod dashboard (optional, for auto-prompts)
 - [ ] GPU quota available on RunPod account
 
 ## 🔄 Updates

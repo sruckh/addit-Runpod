@@ -129,4 +129,31 @@
 - **Compatibility**: Perfect for RunPod GPU cloud services (x86_64 GPUs)
 - **Performance**: Faster builds with single-platform targeting
 
+## 2025-07-25 21:15
+
+### Docker Build Syntax Fix & API Enhancement |TASK:TASK-2025-07-25-004|
+- **What**: Fixed Docker build syntax errors and enhanced API with auto-prompt generation
+- **Why**: GitHub Actions failing with Python syntax errors in multi-line RUN command
+- **How**: 
+  - Created separate `preload_models.py` script to replace problematic inline Python command
+  - Removed `--platform=linux/amd64` flag from Dockerfile (GitHub Actions controls platform)
+  - Added comprehensive error handling for model pre-loading failures
+  - Enhanced API with Qwen2.5-VL-72B (free) integration for auto-prompt generation
+  - Added `requests` dependency and `OPENROUTER_API_KEY` environment variable
+  - Updated documentation to reflect dual-mode API (auto vs manual prompts)
+- **Issues**: Multi-line shell escaping in Docker causing syntax errors
+- **Result**: 
+  - Docker build should now complete successfully without syntax errors
+  - API supports both auto-generated and manual prompts
+  - Proper fallback handling for missing OpenRouter API key
+  - Enhanced user experience with intelligent prompt generation
+  - Updated TASKS.md with completion of build fix and API enhancement
+
+### API Enhancement Summary
+- **Auto-Prompt Mode**: Just provide `object_to_add` (e.g., "cat")  
+- **Manual Mode**: Provide `prompt_source`, `prompt_target`, `subject_token`
+- **Qwen2.5-VL-72B**: Free model via OpenRouter for intelligent image analysis
+- **Fallback**: Graceful degradation when OpenRouter unavailable
+- **Environment Variables**: Added `HF_TOKEN` (required) and `OPENROUTER_API_KEY` (optional)
+
 ---

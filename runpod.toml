@@ -15,6 +15,10 @@ cpu = 4
 [environment]
 HF_HOME = "/app/.cache/huggingface"
 PYTHONUNBUFFERED = "1"
+# Hugging Face token for accessing gated models (set this in RunPod dashboard)
+HF_TOKEN = "${HF_TOKEN}"
+# OpenRouter API key for auto-prompt generation (set this in RunPod dashboard)
+OPENROUTER_API_KEY = "${OPENROUTER_API_KEY}"
 
 [scaling]
 max_concurrency = 1
