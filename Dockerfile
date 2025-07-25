@@ -1,5 +1,5 @@
-# Use RunPod's PyTorch base image
-FROM runpod/pytorch:2.0.0-py3.10-cuda11.8
+# Use official PyTorch base image with CUDA 12.6 and PyTorch 2.6
+FROM pytorch/pytorch:2.6.0-cuda12.6-cudnn9-devel
 
 # Set working directory
 WORKDIR /app

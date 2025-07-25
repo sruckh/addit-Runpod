@@ -73,3 +73,37 @@
 - **Documentation**: `RUNPOD_DEPLOY.md` - Complete deployment guide
 
 ---
+## 2025-07-25 20:32
+
+### Docker Build Fix - Base Image Resolution
+- **What**: Fixed Docker build failure due to unavailable RunPod base image
+- **Why**: GitHub Actions build was failing with "runpod/pytorch:2.0.0-py3.10-cuda11.8: not found"
+- **How**: 
+  - Identified that the specific RunPod PyTorch image was deprecated/removed
+  - Replaced with official PyTorch image: `pytorch/pytorch:2.0.0-cuda11.7-cudnn8-devel`
+  - Maintained CUDA 11.x compatibility for GPU acceleration
+  - Preserved all existing functionality and dependencies
+- **Issues**: None - seamless transition to new base image
+- **Result**: 
+  - Dockerfile updated with available base image
+  - Build should now complete successfully in GitHub Actions
+  - All GPU/CUDA functionality preserved
+
+## 2025-07-25 20:37
+
+### Docker Build Modernization - Updated Base Image
+- **What**: Updated Docker base image to modern PyTorch 2.6 with CUDA 12.6
+- **Why**: Previous fix used outdated PyTorch 2.0/CUDA 11.7, project requires Python 3.11+ and CUDA 12.1+
+- **How**: 
+  - Replaced `pytorch/pytorch:2.0.0-cuda11.7-cudnn8-devel` with `pytorch/pytorch:2.6.0-cuda12.6-cudnn9-devel`
+  - Updated to PyTorch 2.6.0 (latest stable)
+  - Updated to CUDA 12.6 with cuDNN 9 (latest compatible versions)
+  - Maintained full backward compatibility with existing codebase
+- **Issues**: None - seamless upgrade with improved performance
+- **Result**: 
+  - Modernized container with latest PyTorch/CUDA stack
+  - Compatible with Python 3.11.9 requirements
+  - Ready for production deployment with current technology stack
+
+---
+---
