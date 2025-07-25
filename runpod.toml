@@ -1,0 +1,22 @@
+# RunPod Serverless Configuration
+# This file configures the RunPod serverless deployment
+
+[build]
+dockerfile = "Dockerfile"
+context = "."
+
+[runtime]
+handler = "handler.handler"
+gpu = true
+gpu_count = 1
+memory = 16
+cpu = 4
+
+[environment]
+HF_HOME = "/app/.cache/huggingface"
+PYTHONUNBUFFERED = "1"
+
+[scaling]
+max_concurrency = 1
+timeout = 300
+idle_timeout = 60

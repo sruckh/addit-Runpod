@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "npx",
+      "args": ["-y", "@serena-ai/mcp-server"],
+      "env": {
+        "SERENA_PROJECT_PATH": "/mnt/backblaze/addit"
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.huggingface/
+*.tmp
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test outputs
+test_result.json
+outputs/
+
+# Documentation
+*.md
+!RUNPOD_DEPLOY.md
+
+# Images (except test images)
+images/
+!images/bed_dark_room.jpg
+!images/cat.jpg
+
+# Configuration files not needed in container
+serena-mcp-config.json
