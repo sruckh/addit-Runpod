@@ -157,3 +157,40 @@
 - **Environment Variables**: Added `HF_TOKEN` (required) and `OPENROUTER_API_KEY` (optional)
 
 ---
+
+## 2025-07-26 10:30
+
+### API Refactoring - File Upload and S3 Integration |TASK:TASK-2025-07-26-001|
+- **What**: Complete API refactoring from base64 to file uploads with S3 storage integration
+- **Why**: User requested simpler API with file uploads, S3 storage options, and auto-generated prompts
+- **How**: 
+  - Refactored handler.py to accept file paths instead of base64 encoded images
+  - Added S3 integration with boto3 for optional cloud storage
+  - Implemented dual output system: S3 URLs when configured, temp download URLs as fallback
+  - Simplified LLM prompt generation to auto-generate both subject_token and prompt_source
+  - Added comprehensive file handling with /tmp directory cleanup
+  - Updated input validation for new API structure (source_image path + prompt_target)
+  - Added environment variable support for S3 configuration (S3_BUCKET_ID, S3_SECRET_KEY, S3_URL, S3_ZONE)
+- **Issues**: None - clean refactoring with backward compatibility where possible
+- **Result**: 
+  - API now accepts multipart file uploads instead of base64
+  - Single endpoint that auto-generates subject_token and prompt_source from images
+  - Flexible output: S3 storage when configured, temporary URLs otherwise
+  - Proper temporary file cleanup and error handling
+  - Updated TASKS.md with completion of API refactoring task (TASK-2025-07-26-001)
+
+### API Enhancement Summary
+- **Input**: Image file path + prompt_target (what to add) + optional seed_src
+- **Auto-Generated**: subject_token (1-2 words) + prompt_source (image description)
+- **Output**: image_url (S3 or temporary) + metadata with all processing parameters
+- **Storage**: S3 integration with fallback to temporary download links
+- **Cleanup**: Automatic /tmp file cleanup after processing
+
+### Technical Improvements
+- **File Handling**: Switched from base64 to file path input for better performance
+- **Storage Options**: Dual system supporting both S3 and temporary file serving
+- **LLM Integration**: Qwen2.5-VL-72B for intelligent prompt generation from images
+- **Error Handling**: Comprehensive cleanup and fallback mechanisms
+- **API Simplification**: Reduced required input fields while maintaining functionality
+
+---

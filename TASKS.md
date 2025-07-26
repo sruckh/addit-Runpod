@@ -7,43 +7,42 @@
 **Progress**: 1/1 tasks completed
 
 ## Current Task
-**Task ID**: TASK-2025-07-25-004
-**Title**: Fix Docker Build Syntax and Platform Issues
+**Task ID**: TASK-2025-07-26-001
+**Title**: API Refactoring - File Upload and S3 Integration
 **Status**: COMPLETE
-**Started**: 2025-07-25 21:15
-**Dependencies**: [TASK-2025-07-25-003]
+**Started**: 2025-07-26 10:30
+**Dependencies**: [TASK-2025-07-25-004]
 
 ### Task Context
-- **Previous Work**: Fixed Docker multi-platform builds and added API enhancements
+- **Previous Work**: Refactored API from base64 to file uploads with S3 integration
 - **Key Files**:
-  - `Dockerfile` - Fixed syntax errors and platform flag issues
-  - `preload_models.py` - New script for proper model pre-loading
-  - `handler.py` - Enhanced with auto-prompt generation via Qwen2.5-VL-72B
-  - `requirements.txt` - Added requests dependency
-  - `runpod.toml` - Added HF_TOKEN and OPENROUTER_API_KEY environment variables
-- **Environment**: GitHub Actions + Docker builds + OpenRouter integration
-- **Next Steps**: Docker build should complete successfully
+  - `handler.py` - Complete API refactoring with file handling and S3 support
+  - `requirements.txt` - Added boto3 for S3 integration
+- **Environment**: RunPod serverless with file upload support and optional S3 storage
+- **Next Steps**: API ready for deployment with new file-based architecture
 
 ### Findings & Decisions
-- **FINDING-001**: Docker build failing with syntax errors in multi-line Python command
-- **DECISION-001**: Create separate preload_models.py script instead of inline command
-- **FINDING-002**: FROM --platform flag causing build warnings
-- **DECISION-002**: Remove --platform flag since GitHub Actions controls platform targeting
-- **FINDING-003**: Missing proper error handling for model pre-loading failures
-- **DECISION-003**: Add comprehensive error handling with graceful fallback
+- **FINDING-001**: Base64 image handling creates large payloads and complex multipart parsing
+- **DECISION-001**: Switch to file path input with /tmp directory storage for better performance
+- **FINDING-002**: Users need both S3 storage and temporary download options
+- **DECISION-002**: Implement dual output system: S3 upload with fallback to temp URLs
+- **FINDING-003**: LLM should auto-generate both subject_token and prompt_source from images
+- **DECISION-003**: Simplify API to only require image + prompt_target, auto-generate the rest
 
 ### Task Chain
 1. ✅ Project Onboarding & Setup (TASK-2025-07-25-001) [COMPLETE]
 2. ✅ Complete ADDIT RunPod Serverless Deployment (TASK-2025-07-25-002) [COMPLETE]
 3. ✅ Fix Docker Multi-Platform Build Issues (TASK-2025-07-25-003) [COMPLETE]
 4. ✅ Fix Docker Build Syntax and Platform Issues (TASK-2025-07-25-004) [COMPLETE]
-5. ⏳ Next development phase will be defined as needed
+5. ✅ API Refactoring - File Upload and S3 Integration (TASK-2025-07-26-001) [COMPLETE]
+6. ⏳ Next development phase will be defined as needed
 
 ## Completed Tasks Archive
 - [TASK-2025-07-25-001]: Complete Serena Onboarding for AddIT Project → See JOURNAL.md 2025-07-25
 - [TASK-2025-07-25-002]: Complete ADDIT RunPod Serverless Deployment → See JOURNAL.md 2025-07-25
 - [TASK-2025-07-25-003]: Fix Docker Multi-Platform Build Issues → See JOURNAL.md 2025-07-25
 - [TASK-2025-07-25-004]: Fix Docker Build Syntax and Platform Issues → See JOURNAL.md 2025-07-25
+- [TASK-2025-07-26-001]: API Refactoring - File Upload and S3 Integration → See JOURNAL.md 2025-07-26
 
 ## Upcoming Phases
 <!-- Future work not yet started -->
