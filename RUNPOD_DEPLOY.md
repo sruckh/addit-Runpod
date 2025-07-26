@@ -7,9 +7,11 @@ This guide explains how to deploy the ADDIT (Add Object to Image) project as a R
 The ADDIT project has been converted to a RunPod serverless function with the following features:
 - **GPU-accelerated** inference using CUDA
 - **Model caching** for improved performance
-- **Base64 image handling** for API compatibility
+- **File upload support** with temporary file handling
+- **S3 integration** for cloud storage with fallback to temporary URLs
+- **Auto-generated prompts** using Qwen2.5-VL-72B for intelligent image analysis
 - **Comprehensive error handling** and logging
-- **Configurable parameters** for flexible usage
+- **Simplified API** requiring only image file and target prompt
 
 ## 🚀 Quick Start
 
@@ -45,78 +47,92 @@ docker run -p 8000:8000 addit-serverless
 
 ## 📡 API Usage
 
+### New Simplified API Design
+
+The API has been completely refactored for better usability:
+- **File uploads** instead of base64 encoding
+- **Auto-generated prompts** from image analysis
+- **S3 storage** with temporary URL fallback
+- **Single endpoint** with minimal required fields
+
 ### Request Format
 
-#### Option 1: Auto-Prompt Generation (Recommended)
 ```json
 POST /run
 {
   "input": {
-    "source_image": "<base64-encoded-image>",
-    "object_to_add": "cat",
-    "seed_src": 6311,
-    "seed_obj": 1,
-    "extended_scale": 1.1,
-    "structure_transfer_step": 4,
-    "blend_steps": [18],
-    "localization_model": "attention",
-    "use_offset": false,
-    "use_inversion": true
+    "source_image": "/tmp/uploaded_image.jpg",
+    "prompt_target": "a red car in the driveway",
+    "seed_src": 6311
   }
 }
 ```
 
-#### Option 2: Manual Prompts
-```json
-POST /run
-{
-  "input": {
-    "source_image": "<base64-encoded-image>",
-    "prompt_source": "A photo of a bed in a dark room",
-    "prompt_target": "A photo of a cat lying on a bed in a dark room",
-    "subject_token": "cat",
-    "seed_src": 6311,
-    "seed_obj": 1,
-    "extended_scale": 1.1,
-    "structure_transfer_step": 4,
-    "blend_steps": [18],
-    "localization_model": "attention",
-    "use_offset": false,
-    "use_inversion": true
-  }
-}
-```
+**Required Fields:**
+- `source_image`: File path to uploaded image (stored in `/tmp/`)
+- `prompt_target`: What you want to add to the image
+
+**Optional Fields:**
+- `seed_src`: Random seed for reproducible results (default: 6311)
+- `seed_obj`: Object insertion seed (default: 1)
+- `extended_scale`: Scale factor (default: 1.1)
+- `structure_transfer_step`: Transfer step (default: 4)
+- `blend_steps`: Blending steps array (default: [18])
+- `localization_model`: Model type (default: "attention")
+- `use_offset`: Use offset (default: false)
+- `use_inversion`: Use inversion (default: true)
 
 ### Response Format
 ```json
 {
-  "output": {
-    "source_image": "<base64-encoded-source>",
-    "edited_image": "<base64-encoded-edited>",
-    "metadata": {
-      "prompt_source": "...",
-      "prompt_target": "...",
-      "subject_token": "...",
-      "seed_src": 6311,
-      "seed_obj": 1,
-      "extended_scale": 1.1,
-      "structure_transfer_step": 4,
-      "blend_steps": [18],
-      "localization_model": "attention",
-      "use_offset": false,
-      "use_inversion": true
-    }
-  }
+  "image_url": "https://s3.amazonaws.com/bucket/job_id_edited.jpg",
+  "metadata": {
+    "prompt_source": "A photo of a house with a driveway",
+    "prompt_target": "a red car in the driveway", 
+    "subject_token": "car",
+    "seed_src": 6311,
+    "seed_obj": 1,
+    "extended_scale": 1.1,
+    "structure_transfer_step": 4,
+    "blend_steps": [18],
+    "localization_model": "attention",
+    "use_offset": false,
+    "use_inversion": true
+  },
+  "job_id": "uuid-string"
 }
 ```
+
+**Response Fields:**
+- `image_url`: S3 URL or temporary download URL (`/download/job_id.jpg`)
+- `metadata`: All processing parameters including auto-generated prompts
+- `job_id`: Unique identifier for this processing job
+
+### Auto-Generated Fields
+
+The API automatically generates these fields using Qwen2.5-VL-72B:
+- `prompt_source`: Single sentence describing the source image
+- `subject_token`: 1-2 word description of the main subject being added
 
 ## ⚙️ Configuration
 
 ### Environment Variables
+
+**Required:**
+- `HF_TOKEN`: Hugging Face authentication token (required for FLUX.1-dev model access)
+
+**Optional:**
 - `HF_HOME`: Hugging Face cache directory (default: `/app/.cache/huggingface`)
 - `PYTHONUNBUFFERED`: Enable unbuffered logging (default: `1`)
-- `HF_TOKEN`: Hugging Face authentication token (required for FLUX.1-dev model access)
 - `OPENROUTER_API_KEY`: OpenRouter API key for auto-prompt generation (optional, fallback to simple prompts if not provided)
+
+**S3 Storage (All Required for S3 to Activate):**
+- `S3_BUCKET_ID`: S3 bucket name/identifier
+- `S3_SECRET_KEY`: S3 secret access key
+- `S3_URL`: S3 endpoint URL (AWS or compatible service)
+- `S3_ZONE`: S3 region/zone identifier
+
+**Note:** If S3 variables are not configured, the API automatically falls back to temporary file serving with download URLs.
 
 ### RunPod Configuration (`runpod.toml`)
 - **GPU**: 1x GPU (required for FLUX.1-dev)
@@ -144,38 +160,58 @@ POST /run
    - Increase timeout in `runpod.toml`
    - Check network connectivity for model downloads
 
-3. **Image Encoding Issues**
-   - Ensure base64 encoding is correct
+3. **File Upload Issues**
+   - Ensure image file is properly uploaded to `/tmp/` directory
    - Check image format (PNG/JPEG supported)
+   - Verify file permissions and accessibility
 
 ### Auto-Prompt Generation
 
-The API now supports automatic prompt generation using Qwen2.5-VL-72B (free):
+The API automatically generates intelligent prompts using Qwen2.5-VL-72B:
 
 **Benefits:**
-- **Simplified API**: Just provide `object_to_add` instead of crafting prompts
-- **Intelligent Analysis**: AI analyzes your source image to create contextual prompts
+- **Simplified API**: Just provide `prompt_target` (what to add)
+- **Intelligent Analysis**: AI analyzes your source image to create contextual descriptions
 - **Better Results**: Prompts are tailored to the specific scene and lighting
+- **No Manual Crafting**: Eliminates need to write detailed prompt descriptions
 
 **How it works:**
-1. Qwen2.5-VL-72B (free) analyzes your source image
-2. Generates a detailed description of the scene
-3. Creates contextually appropriate prompts for object insertion
+1. Upload your image file to the API
+2. Specify what you want to add in `prompt_target`
+3. Qwen2.5-VL-72B analyzes the image and generates:
+   - `prompt_source`: Detailed description of the current scene
+   - `subject_token`: 1-2 word identifier of the main subject
 
 **Example:**
 ```json
 {
   "input": {
-    "source_image": "<base64-image-of-bedroom>",
-    "object_to_add": "cat"
+    "source_image": "/tmp/bedroom_photo.jpg",
+    "prompt_target": "a cat lying on the bed"
   }
 }
 ```
 
-**Generated prompts might be:**
-- `prompt_source`: "A cozy bedroom with warm lighting, featuring a bed with rumpled sheets and soft pillows"
+**Auto-generated prompts might be:**
+- `prompt_source`: "A cozy bedroom with warm lighting and a neatly made bed"
 - `subject_token`: "cat"
-- `prompt_target`: "A cozy bedroom with warm lighting, featuring a cat lying on a bed with rumpled sheets and soft pillows"
+
+### S3 Storage Integration
+
+The API supports optional S3 storage for processed images:
+
+**Benefits:**
+- **Cloud Storage**: Permanent storage of processed images
+- **CDN Support**: Fast global image delivery
+- **Automatic Fallback**: Uses temporary URLs if S3 not configured
+
+**Configuration:**
+Set all four S3 environment variables to enable:
+- `S3_BUCKET_ID`, `S3_SECRET_KEY`, `S3_URL`, `S3_ZONE`
+
+**Response Options:**
+- **With S3**: Returns permanent S3 URL (`https://s3.../image.jpg`)
+- **Without S3**: Returns temporary download URL (`/download/job_id.jpg`)
 
 ### Debug Mode
 ```bash
@@ -193,6 +229,11 @@ python handler.py
 - [ ] Environment variables configured:
   - [ ] `HF_TOKEN` set in RunPod dashboard (required)
   - [ ] `OPENROUTER_API_KEY` set in RunPod dashboard (optional, for auto-prompts)
+  - [ ] S3 variables configured if using cloud storage (optional):
+    - [ ] `S3_BUCKET_ID`
+    - [ ] `S3_SECRET_KEY`
+    - [ ] `S3_URL`
+    - [ ] `S3_ZONE`
 - [ ] GPU quota available on RunPod account
 
 ## 🔄 Updates
